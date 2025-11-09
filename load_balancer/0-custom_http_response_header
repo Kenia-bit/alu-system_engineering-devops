@@ -14,11 +14,12 @@ server {
 
     server_name _;
 
-    add_header X-Served-By \$hostname;
+    location / {
+        add_header X-Served-By \$hostname;
+    }
 }
 "
 
-# Overwrite default config
 echo "$config" | sudo tee /etc/nginx/sites-available/default > /dev/null
 
 sudo systemctl restart nginx
