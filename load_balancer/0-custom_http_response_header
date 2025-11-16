@@ -1,17 +1,31 @@
 #!/usr/bin/env bash
-#Installing Nginx and configuring it
-sudo apt update -y
-sudo apt install nginx -y
-new_config=\
-"server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
-		root /var/www/html;
-	index index.html index.html index.nginx-debian.html;
-	server_name _;
-	add_header X-Served-By $HOSTNAME;
+# Installs and configures Nginx to include a custom X-Served-By header
+
+# Install nginx
+apt-get update -y
+apt-get install -y nginx
+
+# Get machine hostname
+HOSTNAME_VALUE=$(hostname)
+
+# Replace default nginx config
+cat <<EOF > /etc/nginx/sites-available/default
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+    index index.html index.htm;
+
+    server_name _;
+
+    add_header X-Served-By $HOSTNAME_VALUE;
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
 }
-"
-sudo chown -R "$USER":"$USER" /etc/nginx/sites-available/default
-echo "$new_config" > /etc/nginx/sites-available/default
-sudo service nginx restart
+EOF
+
+# Restart nginx
+systemctl restart nginx
